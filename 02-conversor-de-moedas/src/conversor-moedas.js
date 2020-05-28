@@ -12,15 +12,20 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDoubleRight } from "@fortawesome/free-solid-svg-icons";
 import ListarMoedas from "./listar-moedas";
+import axios from "axios";
 
 function ConversorMoedas() {
+  const FIXER_URL =
+    "http://data.fixer.io/api/latest?access_key=eba7130a5b2d720ce43eb5fcddd47cc3";
+
   const [valor, setValor] = useState("1");
   const [moedaDe, setMoedaDe] = useState("BRL");
   const [moedaPara, setMoedaPara] = useState("USD");
   const [exibirSpinner, setExibirSpinner] = useState(false);
   const [formValidado, setFormValidado] = useState(false);
   const [exibirModal, setExibirModal] = useState(false);
-  const [resultadoConversao, SetResultadoConversao] = useState("");
+  const [resultadoConversao, setResultadoConversao] = useState("");
+  const [exibirMsgErro, setExibirMsgErro] = useState(false);
 
   function handleValor(event) {
     setValor(event.target.value.replace(/\D/g, ""));
@@ -46,15 +51,48 @@ function ConversorMoedas() {
     event.preventDefault();
     setFormValidado(true);
     if (event.currentTarget.checkValidity() === true) {
-      // TODO implementar a chamada ao Fixer.io
+      setExibirSpinner(true);
+      axios
+        .get(FIXER_URL)
+        .then((res) => {
+          const cotacao = obterCotacao(res.data);
+          if (cotacao) {
+            setResultadoConversao(
+              `${valor} ${moedaDe} = ${cotacao} ${moedaPara}`
+            );
+            setExibirModal(true);
+            setExibirSpinner(false);
+            setExibirMsgErro(false);
+          } else {
+            exibirErro();
+          }
+        })
+        .catch((err) => exibirErro());
     }
+  }
+
+  function obterCotacao(dadosCotacao) {
+    if (!dadosCotacao || dadosCotacao.success !== true) {
+      return false;
+    }
+
+    const cotacaoDe = dadosCotacao.rates[moedaDe];
+    const cotacaoPara = dadosCotacao.rates[moedaPara];
+    const cotacao = (1 / cotacaoDe) * cotacaoPara * valor;
+
+    return cotacao.toFixed(2);
+  }
+
+  function exibirErro() {
+    setExibirMsgErro(true);
+    setExibirSpinner(false);
   }
 
   return (
     <>
       <h1>Conversor de moedas</h1>
 
-      <Alert variant="danger" show={false}>
+      <Alert variant="danger" show={exibirMsgErro}>
         Erro obtendo dados de conversão, tente novamente.
       </Alert>
 
