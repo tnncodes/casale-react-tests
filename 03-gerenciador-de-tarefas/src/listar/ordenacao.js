@@ -5,7 +5,7 @@ import {
   faSortUp,
   faSortDown,
 } from "@fortawesome/free-solid-svg-icons";
-import PropTypes, { func } from "prop-types";
+import PropTypes from "prop-types";
 
 function Ordenacao(props) {
   function handleAscDesc() {
