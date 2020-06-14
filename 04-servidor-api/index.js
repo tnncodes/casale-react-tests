@@ -5,6 +5,10 @@ const cors = require("cors");
 const {
   listarTarefas,
   listarTarefaId,
+  cadastrarTarefa,
+  atualizarTarefa,
+  removerTarefa,
+  concluirTarefa,
 } = require("./controllers/gerenciador-tarefas.js");
 
 const app = express();
@@ -13,10 +17,6 @@ const port = 3001;
 app.use(cors());
 app.use(bodyParser.json());
 
-function naoImplementado(req, res) {
-  res.status(501).json({ erro: "Não Implementado." });
-}
-
 // listar todas as tarefas - (get)
 app.get("/gerenciador-tarefas", listarTarefas);
 
@@ -24,15 +24,15 @@ app.get("/gerenciador-tarefas", listarTarefas);
 app.get("/gerenciador-tarefas/:id", listarTarefaId);
 
 // cadastrar uma tarefa - (post)
-app.post("/gerenciador-tarefas", naoImplementado);
+app.post("/gerenciador-tarefas", cadastrarTarefa);
 
 // atualizar uma tarefa - (put)
-app.put("/gerenciador-tarefas/:id", naoImplementado);
+app.put("/gerenciador-tarefas/:id", atualizarTarefa);
 
 // remover uma tarefa - (delete)
-app.delete("/gerenciador-tarefas/:id", naoImplementado);
+app.delete("/gerenciador-tarefas/:id", removerTarefa);
 
 // concluir uma tarefa - (put)
-app.put("/gerenciador-tarefas/:id/concluir", naoImplementado);
+app.put("/gerenciador-tarefas/:id/concluir", concluirTarefa);
 
 app.listen(port, () => console.log(`Servidor inicializado na porta ${port}`));
