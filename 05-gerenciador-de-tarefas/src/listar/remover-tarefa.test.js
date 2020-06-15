@@ -4,20 +4,11 @@ import RemoverTarefa from "./remover-tarefa";
 import Tarefa from "../models/tarefa.models";
 import { render, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
+import axiosMock from "axios";
 
 describe("Teste do componente de remoção de tarefas", () => {
   const nomeTarefa = "Tarefa de teste";
   const tarefa = new Tarefa(1, nomeTarefa, false);
-
-  it("deve renderizar o componente sem erros", () => {
-    const div = document.createElement("div");
-
-    ReactDOM.render(
-      <RemoverTarefa tarefa={tarefa} recarregarTarefas={() => false} />,
-      div
-    );
-    ReactDOM.unmountComponentAtNode(div);
-  });
 
   it("deve exibir a modal", () => {
     const { getByTestId } = render(
@@ -28,15 +19,14 @@ describe("Teste do componente de remoção de tarefas", () => {
     expect(getByTestId("modal")).toHaveTextContent(nomeTarefa);
   });
 
-  it("deve remover uma tarefa", () => {
-    localStorage["tarefas"] = JSON.stringify([tarefa]);
-    const { getByTestId } = render(
+  it("deve remover uma tarefa", async () => {
+    const { getByTestId, findByTestId } = render(
       <RemoverTarefa tarefa={tarefa} recarregarTarefas={() => false} />
     );
 
     fireEvent.click(getByTestId("btn-abrir-modal"));
     fireEvent.click(getByTestId("btn-remover"));
-    const tarefasDb = JSON.parse(localStorage["tarefas"]);
-    expect(tarefasDb.length).toBe(0);
+    await findByTestId("modal");
+    expect(axiosMock.delete).toHaveBeenCalledTimes(1);
   });
 });
