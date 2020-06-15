@@ -2,20 +2,30 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Button, Form, Jumbotron, Modal } from "react-bootstrap";
 import { navigate, A } from "hookrouter";
+import axios from "axios";
+import Tarefa from "../models/tarefa.models";
 
 function AtualizarTarefa(props) {
+  const API_URL_TAREFAS = "http://localhost:3000/gerenciador-tarefas/";
+
   const [exibirModal, setExibirModal] = useState(false);
   const [formValidado, setFormValidado] = useState(false);
   const [tarefa, setTarefa] = useState("");
   const [carregarTarefa, setCarregarTarefa] = useState(true);
+  const [exibirModalErro, setExibirModalErro] = useState(false);
 
   useEffect(() => {
+    async function obterTarefa() {
+      try {
+        let { data } = await axios.get(API_URL_TAREFAS + props.id);
+        setTarefa(data.nome);
+      } catch (err) {
+        navigate("/");
+      }
+    }
+
     if (carregarTarefa) {
-      const tarefasDb = localStorage["tarefas"];
-      const tarefas = tarefasDb ? JSON.parse(tarefasDb) : [];
-      const tarefa = tarefas.filter((t) => t.id === parseInt(props.id))[0];
-      console.log("tarefa: ", tarefa);
-      setTarefa(tarefa.nome);
+      obterTarefa();
       setCarregarTarefa(false);
     }
   }, [carregarTarefa, props.id]);
@@ -29,26 +39,22 @@ function AtualizarTarefa(props) {
     navigate("/");
   }
 
-  function atualizar(event) {
+  function handleFecharModalErro() {
+    setExibirModalErro(false);
+  }
+
+  async function atualizar(event) {
     event.preventDefault();
     setFormValidado(true);
 
     if (event.currentTarget.checkValidity() === true) {
-      // obtém as tarefas
-      const tarefasDb = localStorage["tarefas"];
-      let tarefas = tarefasDb ? JSON.parse(tarefasDb) : [];
-
-      // persistir a tarefa atualizada
-      tarefas = tarefas.map((tarefaObj) => {
-        if (tarefaObj.id === parseInt(props.id)) {
-          tarefaObj.nome = tarefa;
-        }
-
-        return tarefaObj;
-      });
-
-      localStorage["tarefas"] = JSON.stringify(tarefas);
-      setExibirModal(true);
+      try {
+        const tarefaAtualizar = new Tarefa(null, tarefa, false);
+        await axios.put(API_URL_TAREFAS + props.id, tarefaAtualizar);
+        setExibirModal(true);
+      } catch (err) {
+        setExibirModalErro(true);
+      }
     }
   }
 
@@ -103,6 +109,22 @@ function AtualizarTarefa(props) {
           <Modal.Footer>
             <Button variant="success" onClick={handleFecharModal}>
               Continuar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal show={exibirModalErro} onHide={handleFecharModalErro}>
+          <Modal.Header closeButton>
+            <Modal.Title>Erro</Modal.Title>
+          </Modal.Header>
+
+          <Modal.Body>
+            Erro ao atualizar tarefa, tente novamente em instantes.
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button variant="warning" onClick={handleFecharModalErro}>
+              Fechar
             </Button>
           </Modal.Footer>
         </Modal>
