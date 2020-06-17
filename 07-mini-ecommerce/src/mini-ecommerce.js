@@ -11,10 +11,35 @@ function MiniEcommerce() {
   const [exibirCheckout, setExibirCheckout] = useState(false);
   const [total, setTotal] = useState("0,00");
 
+  function adicionarProduto(produto) {
+    const objCarrinho = Object.assign({}, carrinho);
+
+    // atualizar a quantidade
+    let novoProduto = true;
+
+    objCarrinho.produtos.forEach((prod, indice) => {
+      if (prod.nome === produto.nome) {
+        objCarrinho.produtos[indice].quantidade++;
+        novoProduto = false;
+      }
+    });
+
+    // adicionar novo produto ao carrinho
+    if (novoProduto) {
+      objCarrinho.produtos.push({
+        nome: produto.nome,
+        preco: produto.preco,
+        quantidade: 1,
+      });
+    }
+
+    setCarrinho(objCarrinho);
+  }
+
   return (
     <>
       <Menu />
-      <Produtos />
+      <Produtos visivel={exibirProdutos} adicionarProduto={adicionarProduto} />
       <Checkout />
     </>
   );
