@@ -40,6 +40,6 @@ describe("Teste do componente de listagem de produtos", () => {
     );
 
     expect(getByTestId("card1")).toHaveTextContent("Comprar (R$ 249,99)");
-    expect(getByTestId("card2")).toHaveTextContent("Comprar (R$ 79,90)");
+    expect(getByTestId("card2")).toHaveTextContent("Comprar (R$ 79,90Co)");
   });
 });
