@@ -75,9 +75,9 @@ function RemoverTarefa(props) {
       </Modal>
 
       <Modal show={exibirModalErro} onHide={handleFecharModalErro}>
-        <Modal.header>
+        <Modal.Header>
           <Modal.Title>Erro</Modal.Title>
-        </Modal.header>
+        </Modal.Header>
 
         <Modal.Body>
           Erro ao remover tarefa, tente novamente em instantes.

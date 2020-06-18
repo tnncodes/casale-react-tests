@@ -59,7 +59,7 @@ function cadastrarTarefa(req, res) {
   }
 
   const tarefa = {
-    id: uuid,
+    id: uuid(),
     nome: req.body["nome"],
     concluida: req.body["concluida"],
   };
