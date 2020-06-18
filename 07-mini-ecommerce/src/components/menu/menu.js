@@ -6,8 +6,22 @@ import {
   faCashRegister,
   faShoppingCart,
 } from "@fortawesome/free-solid-svg-icons";
+import PropTypes from "prop-types";
 
-function Menu() {
+function Menu(props) {
+  function calcularTotal() {
+    if (props.produtos.length === 0) {
+      return "0,00";
+    }
+
+    let total = 0;
+    props.produtos.forEach((produto) => {
+      let preco = produto.preco.replace(",", ".").replace("R$ ", "");
+      total += parseFloat(preco) * produto.quantidade;
+    });
+    return total.toFixed(2).toString().replace(".", ",");
+  }
+
   return (
     <Navbar bg="dark" variant="dark">
       <Navbar.Brand href="">Mini Ecommerce</Navbar.Brand>
@@ -22,7 +36,7 @@ function Menu() {
             }
             drop="left"
           >
-            <NavDropdown.Item href="">
+            <NavDropdown.Item href="" onClick={props.handleExibirProdutos}>
               <FontAwesomeIcon icon={faShoppingBasket} />
               &nbsp;
               <strong>Produtos</strong>
@@ -33,13 +47,17 @@ function Menu() {
             <NavDropdown.Divider />
 
             <NavDropdown.Item href="" data-testid="total-carrinho">
-              Total: R$ {/* chamar função de cálculo de total */}
+              Total: R$ {calcularTotal()}
             </NavDropdown.Item>
 
             {/* verificar qtd de produtos para exibir ou não o botão */}
-            <span>
+            <span className={props.produtos.length === 0 ? "hidden" : null}>
               <NavDropdown.Divider />
-              <NavDropdown.Item href="" style={{ color: "green" }}>
+              <NavDropdown.Item
+                href=""
+                style={{ color: "green" }}
+                onClick={() => props.handleExibirCheckout(calcularTotal())}
+              >
                 <FontAwesomeIcon icon={faCashRegister} />
                 &nbsp; Finalizar compra
               </NavDropdown.Item>
@@ -50,5 +68,11 @@ function Menu() {
     </Navbar>
   );
 }
+
+Menu.propTypes = {
+  produtos: PropTypes.array.isRequired,
+  handleExibirProdutos: PropTypes.func.isRequired,
+  handleExibirCheckout: PropTypes.func.isRequired,
+};
 
 export default Menu;
