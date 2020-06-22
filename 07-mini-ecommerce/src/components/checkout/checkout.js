@@ -5,6 +5,7 @@ import DatePicker, { registerLocale } from "react-datepicker";
 import pt from "date-fns/locale/pt";
 import PropTypes from "prop-types";
 import ListarEstados from "./listar-estados";
+import ListarCidades from "./listar-cidades";
 
 function Checkout(props) {
   return (
@@ -43,7 +44,7 @@ function Checkout(props) {
               type="text"
               placeholder="Digite o seu nome completo"
               name="nomeCompleto"
-              data-testId="txt-nome-completo"
+              data-testid="txt-nome-completo"
             />
             <Form.Control.Feedback type="invalid">
               Digite o seu nome completo (mínimo 5 caracteres)
@@ -135,7 +136,7 @@ function Checkout(props) {
           <Col sm={9}>
             <Form.Control as="select" name="cidade" data-testid="cidade">
               <option value="">Selecione a cidade</option>
-              {/* listar cidades aqui */}
+              <ListarCidades estado={""} />
             </Form.Control>
 
             <Form.Control.Feedback type="invalid">
