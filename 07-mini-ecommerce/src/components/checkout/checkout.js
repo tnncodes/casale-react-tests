@@ -9,10 +9,15 @@ import ListarCidades from "./listar-cidades";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { validarCpf, formatarCpf } from "../../utils/cpf-util";
+import formatarCep from "../../utils/cep-util";
+import axios from "axios";
 
 registerLocale("pt", pt);
 
 function Checkout(props) {
+  const CHECKOUT_URL =
+    "http://localhost:3001/mini-ecommerce/checkout/finalizar-compra";
+
   const [dataNascimento, setDataNascimento] = useState(null);
   const [formEnviado, setFormEnviado] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -26,7 +31,7 @@ function Checkout(props) {
       .required()
       .min(14)
       .max(14)
-      .test(`cpf-valido`, `CPF inválido`, (cpf) => validarCpf(cpf)),
+      .test("cpf-valido", "CPF inválido", (cpf) => validarCpf(cpf)),
     endereco: yup.string().min(5).required(),
     cidade: yup.string().required(),
     estado: yup.string().required(),
@@ -39,7 +44,22 @@ function Checkout(props) {
     return props.visivel ? null : "hidden";
   }
 
-  function finalizarCompra(values) {}
+  async function finalizarCompra(dados) {
+    if (!dataNascimento) {
+      setFormEnviado(true);
+      return;
+    }
+    dados.dataNascimento = dataNascimento;
+    dados.produtos = JSON.stringify(props.produtos);
+    dados.total = `R$ ${props.total}`;
+    try {
+      await axios.post(CHECKOUT_URL, dados);
+      setShowModal(true);
+      props.handleLimparCarrinho();
+    } catch (err) {
+      setShowErroModal(true);
+    }
+  }
 
   function handleDataNascimento(data) {
     setDataNascimento(data);
@@ -49,12 +69,20 @@ function Checkout(props) {
     if (!formEnviado) {
       return "form-control";
     }
-
     if (dataNascimento) {
       return "form-control is-valid";
     } else {
       return "form-control is-invalid";
     }
+  }
+
+  function handleContinuar() {
+    setShowModal(false);
+    props.handleExibirProdutos();
+  }
+
+  function handleFecharErroModal() {
+    setShowErroModal(false);
   }
 
   return (
@@ -78,12 +106,10 @@ function Checkout(props) {
       >
         {({ handleSubmit, handleChange, values, touched, errors }) => (
           <Form noValidate style={{ margin: "10px" }} onSubmit={handleSubmit}>
-            {/* Email */}
             <Form.Group as={Row} controlId="email">
               <Form.Label column sm={3}>
                 Email
               </Form.Label>
-
               <Col sm={9}>
                 <Form.Control
                   type="email"
@@ -95,19 +121,16 @@ function Checkout(props) {
                   isValid={touched.email && !errors.email}
                   isInvalid={touched.email && !!errors.email}
                 />
-
                 <Form.Control.Feedback type="invalid">
                   Digite um email válido.
                 </Form.Control.Feedback>
               </Col>
             </Form.Group>
 
-            {/* Nome */}
             <Form.Group as={Row} controlId="nomeCompleto">
               <Form.Label column sm={3}>
                 Nome completo
               </Form.Label>
-
               <Col sm={9}>
                 <Form.Control
                   type="text"
@@ -120,17 +143,15 @@ function Checkout(props) {
                   isInvalid={touched.nomeCompleto && !!errors.nomeCompleto}
                 />
                 <Form.Control.Feedback type="invalid">
-                  Digite o seu nome completo (mínimo 5 caracteres)
+                  Digite o seu nome completo (mínimo 5 caracteres).
                 </Form.Control.Feedback>
               </Col>
             </Form.Group>
 
-            {/* Data de Nascimento */}
             <Form.Group as={Row} controlId="dataNascimento">
               <Form.Label column sm={3}>
                 Data de nascimento
               </Form.Label>
-
               <Col sm={9}>
                 <DatePicker
                   locale="pt"
@@ -148,12 +169,10 @@ function Checkout(props) {
               </Col>
             </Form.Group>
 
-            {/* CPF */}
             <Form.Group as={Row} controlId="cpf">
               <Form.Label column sm={3}>
                 CPF
               </Form.Label>
-
               <Col sm={9}>
                 <Form.Control
                   type="text"
@@ -168,19 +187,16 @@ function Checkout(props) {
                   isValid={touched.cpf && !errors.cpf}
                   isInvalid={touched.cpf && !!errors.cpf}
                 />
-
                 <Form.Control.Feedback type="invalid">
                   Digite um CPF válido
                 </Form.Control.Feedback>
               </Col>
             </Form.Group>
 
-            {/* Endereço */}
             <Form.Group as={Row} controlId="endereco">
               <Form.Label column sm={3}>
                 Endereço
               </Form.Label>
-
               <Col sm={9}>
                 <Form.Control
                   type="text"
@@ -193,18 +209,16 @@ function Checkout(props) {
                   isInvalid={touched.endereco && !!errors.endereco}
                 />
                 <Form.Control.Feedback type="invalid">
-                  Digite o seu endereço
+                  Digite o seu endereço.
                 </Form.Control.Feedback>
               </Col>
             </Form.Group>
 
-            {/* Estado */}
             <Form.Group as={Row} controlId="estado">
               <Form.Label column sm={3}>
                 Estado
               </Form.Label>
-
-              <Col sm="9">
+              <Col sm={9}>
                 <Form.Control
                   as="select"
                   name="estado"
@@ -217,43 +231,38 @@ function Checkout(props) {
                   <ListarEstados />
                 </Form.Control>
                 <Form.Control.Feedback type="invalid">
-                  Selecione o seu estado
+                  Selecione o seu estado.
                 </Form.Control.Feedback>
               </Col>
             </Form.Group>
 
-            {/* Cidade */}
             <Form.Group as={Row} controlId="cidade">
               <Form.Label column sm={3}>
                 Cidade
               </Form.Label>
-
               <Col sm={9}>
                 <Form.Control
                   as="select"
                   name="cidade"
                   data-testid="cidade"
-                  values={values.cidade}
-                  omChange={handleChange}
+                  value={values.cidade}
+                  onChange={handleChange}
                   isValid={touched.cidade && !errors.cidade}
                   isInvalid={touched.cidade && !!errors.cidade}
                 >
                   <option value="">Selecione a cidade</option>
                   <ListarCidades estado={values.estado} />
                 </Form.Control>
-
                 <Form.Control.Feedback type="invalid">
-                  Selecione a cidade
+                  Selecione a sua cidade
                 </Form.Control.Feedback>
               </Col>
             </Form.Group>
 
-            {/* Cep */}
             <Form.Group as={Row} controlId="cep">
               <Form.Label column sm={3}>
                 CEP
               </Form.Label>
-
               <Col sm={9}>
                 <Form.Control
                   type="text"
@@ -261,23 +270,23 @@ function Checkout(props) {
                   name="cep"
                   data-testid="txt-cep"
                   value={values.cep}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    e.currentTarget.value = formatarCep(e.currentTarget.value);
+                    handleChange(e);
+                  }}
                   isValid={touched.cep && !errors.cep}
                   isInvalid={touched.cep && !!errors.cep}
                 />
-
                 <Form.Control.Feedback type="invalid">
-                  Digite o seu CEP
+                  Digite o seu CEP.
                 </Form.Control.Feedback>
               </Col>
             </Form.Group>
 
-            {/* Receber email */}
             <Form.Group as={Row} controlId="emailPromocional">
               <Form.Label column sm={12}>
                 Deseja receber email com promoções?
               </Form.Label>
-
               <Form.Check
                 inline
                 name="emailPromocional"
@@ -289,20 +298,18 @@ function Checkout(props) {
                 checked={values.emailPromocional === "S"}
                 onChange={handleChange}
               />
-
               <Form.Check
                 inline
                 name="emailPromocional"
-                type="radio"
                 id="promocaoNao"
                 value="N"
-                label="Nao"
+                type="radio"
+                label="Não"
                 checked={values.emailPromocional === "N"}
                 onChange={handleChange}
               />
             </Form.Group>
 
-            {/* termos */}
             <Form.Group as={Row} controlId="termosCondicoes">
               <Form.Check
                 name="termosCondicoes"
@@ -316,7 +323,6 @@ function Checkout(props) {
               />
             </Form.Group>
 
-            {/* botão finalizar compra */}
             <Form.Group as={Row} controlId="finalizarCompra">
               <Col className="text-center" sm={12}>
                 <Button
@@ -332,29 +338,37 @@ function Checkout(props) {
         )}
       </Formik>
 
-      <Modal show={false} data-testid="modal-compra-sucesso">
+      <Modal
+        show={showModal}
+        data-testid="modal-compra-sucesso"
+        onHide={handleContinuar}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Compra realizada com sucesso!</Modal.Title>
         </Modal.Header>
-
         <Modal.Body>
           Um email de confirmação foi enviado com os detalhes da transação.
         </Modal.Body>
-
         <Modal.Footer>
-          <Button variant="success">Continuar</Button>
+          <Button variant="success" onClick={handleContinuar}>
+            Continuar
+          </Button>
         </Modal.Footer>
       </Modal>
 
-      <Modal show={false} data-testid="modal-erro-comprar">
+      <Modal
+        show={showErroModal}
+        data-testid="modal-erro-comprar"
+        onHide={handleFecharErroModal}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Erro ao processar pedido.</Modal.Title>
         </Modal.Header>
-
         <Modal.Body>Tente novamente em instantes.</Modal.Body>
-
         <Modal.Footer>
-          <Button variant="warning">Continuar</Button>
+          <Button variant="warning" onClick={handleFecharErroModal}>
+            Continuar
+          </Button>
         </Modal.Footer>
       </Modal>
     </Jumbotron>
