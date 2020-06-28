@@ -1,17 +1,18 @@
 {
-  "name": "04-servidor-api",
+  "name": "servidor-api",
   "version": "1.0.0",
   "description": "API RestFul",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "theandersonn <theandersonn@gmail.com> (http://theandersonn.com/)",
+  "author": "Marcio Casale de Souza",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "uuidv4": "^6.1.0"
+    "express-fileupload": "^1.1.6",
+    "uuid": "^3.4.0"
   }
 }
